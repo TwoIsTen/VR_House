@@ -25,6 +25,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
+	void MoveForward(float distance);
+	void MoveRight(float distance);
+	void LookUp(float angle);
+	void LookRight(float angle);
+	void SetControllByKeyBoard();
+
 private:
 	UMotionControllerComponent* m_leftController;
 	UMotionControllerComponent* m_rightController;
