@@ -14,3 +14,13 @@ AFurniture::AFurniture()
 	m_furnitureMesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	m_furnitureMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 }
+
+void AFurniture::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AFurniture::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+}

@@ -9,12 +9,14 @@
  * 
  */
 UCLASS()
-class VR_HOUSE_API AFurniture : public AMoveAxis
+class VR_HOUSE_API AFurniture : public AActor
 {
 	GENERATED_BODY()
 	
 public:
 	AFurniture();
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

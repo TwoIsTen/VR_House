@@ -29,11 +29,31 @@ public:
 	void MoveRight(float distance);
 	void LookUp(float angle);
 	void LookRight(float angle);
-	void SetControllByKeyBoard();
+	void Debug_SetControllByKeyBoard();
+	FVector GetCameraLocation();
 
-private:
+	//input function
+	void UseLeftTrigger();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMotionControllerComponent* m_leftController;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMotionControllerComponent* m_rightController;
 	
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UCameraComponent* m_cameraComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* m_leftHandMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* m_rightHandMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* m_leftTraceStart;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* m_rightTraceStart;
 };
