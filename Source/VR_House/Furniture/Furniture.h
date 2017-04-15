@@ -20,6 +20,6 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* m_furnitureMesh;
+	USceneComponent* m_root;
 
 };

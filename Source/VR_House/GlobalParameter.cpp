@@ -3,27 +3,34 @@
 #include "VR_House.h"
 #include "GlobalParameter.h"
 
-AGlobalParameter* GlobalParameterReader::m_parameter = nullptr;
 
+//--------------------------------------------------------------------------------
 // Sets default values
-AGlobalParameter::AGlobalParameter()
+AGlobalParameterReader::AGlobalParameterReader()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AGlobalParameter::BeginPlay()
+void AGlobalParameterReader::PostInitializeComponents()
 {
-	GlobalParameterReader::SetParameter(this);
+	Super::PostInitializeComponents();
+
+	check(m_globalData);
+
+	s_param = m_globalData->FindRow<FHouseParamter>("Param",
+		"cache config for environment");
 }
 
-AGlobalParameter* GlobalParameterReader::GetParameter()
+
+//--------------------------------------------------------------------------------
+void AGlobalParameterReader::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	return m_parameter;
+	Super::EndPlay(EndPlayReason);
+	s_param = nullptr;
 }
 
-void GlobalParameterReader::SetParameter(AGlobalParameter* parameter)
-{
-	m_parameter = parameter;
-}
+//--------------------------------------------------------------------------------
+const FHouseParamter* AGlobalParameterReader::s_param = nullptr;
+
+//--------------------------------------------------------------------------------

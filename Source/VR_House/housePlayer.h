@@ -6,6 +6,7 @@
 #include "HousePlayer.generated.h"
 
 class UMotionControllerComponent;
+class AFurniture;
 
 UCLASS()
 class VR_HOUSE_API AHousePlayer : public ACharacter
@@ -13,18 +14,16 @@ class VR_HOUSE_API AHousePlayer : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AHousePlayer();
 
-	// Called when the game starts or when spawned
+public:
 	virtual void BeginPlay() override;
 	
-	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
+public:
 	void MoveForward(float distance);
 	void MoveRight(float distance);
 	void LookUp(float angle);
@@ -32,8 +31,16 @@ public:
 	void Debug_SetControllByKeyBoard();
 	FVector GetCameraLocation();
 
+public:
 	//input function
-	void UseLeftTrigger();
+	void StartUseLeftTrigger();
+	void EndUseLeftTrigger();
+	void StartUseRightTrigger();
+	void EndUseRightTrigger();
+	void StartUseLeftGrip();
+	void EndUseLeftGrip();
+	void StartUseRightGrip();
+	void EndUseRightGrip();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -56,4 +63,30 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* m_rightTraceStart;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* m_leftTraceEnd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* m_rightTraceEnd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* m_leftLaser;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* m_rightLaser;
+
+private:
+	AFurniture* m_selectedFurniture;
+
+	bool m_isLeftTriggerPressing;
+	bool m_isRightTriggerPressing;
+	bool m_isLeftGripPressing;
+	bool m_isRightGripPressing;
+
+	FVector m_leftControlLastPos;
+	FVector m_rightControlLastPos;
+
+	FRotator m_leftControlLastRot;
+	FRotator m_rightControlLastRot;
 };

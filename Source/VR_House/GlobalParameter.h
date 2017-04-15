@@ -5,39 +5,65 @@
 #include "GameFramework/Actor.h"
 #include "GlobalParameter.generated.h"
 
+/*
+// parameters.
+*/
+USTRUCT(Blueprintable)
+struct FHouseParamter : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	FName LogoGPLevelName = "LogoA";
+};
+
 UCLASS()
-class VR_HOUSE_API AGlobalParameter : public AActor
+class VR_HOUSE_API AGlobalParameterReader : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
+	FORCEINLINE static const FHouseParamter* GetParameter()
+	{
+#if WITH_EDITOR
+		if (s_param)
+		{
+			return s_param;
+		}
+		else
+		{
+			AGlobalParameterReader* reader = FindObjectSafe<AGlobalParameterReader>(
+				ANY_PACKAGE, TEXT("GlobalParameter"), true);
+			if (reader)
+			{
+				return reader->m_globalData->FindRow<FHouseParamter>(TEXT("Param"),
+					"Get config by editor");
+			}
+			else
+			{
+				check(false);
+				return nullptr;
+			}
+		}
+#else
+		check(s_param);
+		return s_param;
+#endif
+	}
+
+public:
 	// Sets default values for this actor's properties
-	AGlobalParameter();
+	AGlobalParameterReader();
 
-	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 
-public:
-	UPROPERTY(BlueprintReadWrite)
-	UDataTable* HandModel;
+	// Called when the game ends or when de-spawned
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-};
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	UDataTable* m_globalData;
 
-
-class GlobalParameterReader
-{
-public:
-
-public:
-	static AGlobalParameter* GetParameter();
-	static void SetParameter(AGlobalParameter* parameter);
 private:
-	static AGlobalParameter* m_parameter;
-};
-
-USTRUCT()
-struct FHandModel : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY()
-
-	UStaticMesh* Model;
+	static const FHouseParamter* s_param;
 };

@@ -10,9 +10,9 @@ AFurniture::AFurniture()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_furnitureMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Furniture Mesh"));
-	m_furnitureMesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-	m_furnitureMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	m_root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	m_root->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	m_root->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 }
 
 void AFurniture::BeginPlay()
