@@ -48,7 +48,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMotionControllerComponent* m_rightController;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* m_cameraRoot;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCameraComponent* m_cameraComponent;
 

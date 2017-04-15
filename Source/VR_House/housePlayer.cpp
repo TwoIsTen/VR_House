@@ -24,15 +24,18 @@ AHousePlayer::AHousePlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	m_cameraRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Camera Root Component"));
+	m_cameraRoot->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
 	m_cameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
-	m_cameraComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	m_cameraComponent->AttachToComponent(m_cameraRoot, FAttachmentTransformRules::KeepRelativeTransform);
 
 	m_leftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Left Controller"));
-	m_leftController->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	m_leftController->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	m_leftController->Hand = EControllerHand::Left;
 
 	m_rightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Right Controller"));
-	m_rightController->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	m_rightController->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	m_rightController->Hand = EControllerHand::Right;
 	
 
@@ -204,8 +207,10 @@ void AHousePlayer::LookRight(float angle)
 //--------------------------------------------------------------------------------
 void AHousePlayer::Debug_SetControllByKeyBoard()
 {
-	m_leftController->SetRelativeLocationAndRotation(FVector(100.0f, -10.0f, 0.0f), FRotator::ZeroRotator);
-	m_rightController->SetRelativeLocationAndRotation(FVector(100.0f, 10.0f, 0.0f), FRotator::ZeroRotator);
+	m_leftController->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	m_leftController->SetRelativeLocationAndRotation(FVector(69.281929f, -40.000183f, -21.0f), FRotator(0.0f, -30.0f, 0.0f));
+	m_rightController->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	m_rightController->SetRelativeLocationAndRotation(FVector(69.281929f, 40.000183f, -21.0f), FRotator(0.0f, 30.0f, 0.0f));
 }
 
 //--------------------------------------------------------------------------------
