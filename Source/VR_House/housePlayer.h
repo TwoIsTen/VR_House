@@ -3,10 +3,35 @@
 #pragma once
 
 #include "GameFramework/Character.h"
+#include "GlobalParameter.h"
 #include "HousePlayer.generated.h"
 
 class UMotionControllerComponent;
+class UWidgetComponent;
 class AFurniture;
+
+UENUM(BlueprintType)
+namespace EPlayerState
+{
+	enum Type
+	{
+		Free = 0,
+		Laser,
+		SelectFurniture,
+		MoveFurniture,
+		RotateFurniture,
+		OnMainMenu,
+	};
+}
+
+UENUM(BlueprintType)
+namespace EMenuType
+{
+	enum Type
+	{
+		MainMenu = 0,
+	};
+}
 
 UCLASS()
 class VR_HOUSE_API AHousePlayer : public ACharacter
@@ -41,8 +66,25 @@ public:
 	void EndUseLeftGrip();
 	void StartUseRightGrip();
 	void EndUseRightGrip();
+	void StartUseLeftMenu();
+	void StartUseRightMenu();
+	void ShowMenu(EMenuType::Type type, bool isLeft);
+
+private:
+	void UpdateMenuBackGround(float DeltaTime);
+	void UpdateSelectFrame(float DeltaTime);
+	void StopLaser(bool isLeft);
+	void TickState_SelectFurniture();
+	void TickState_RotateFurniture();
+	void TickState_MoveFurniture();
+	void MakeMenu();
+	UWidgetComponent* GenerateWidgetComponent(FName& name);
 
 protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float m_scaleTime = 0.2f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMotionControllerComponent* m_leftController;
 
@@ -79,6 +121,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* m_rightLaser;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* m_menuAttachNode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UWidgetComponent* m_menuBackGround;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UWidgetComponent* m_selectFrame;
+
 private:
 	AFurniture* m_selectedFurniture;
 
@@ -87,9 +138,35 @@ private:
 	bool m_isLeftGripPressing;
 	bool m_isRightGripPressing;
 
+	float m_times;
+	float m_menuScaleX;
+	float m_menuScaleY;
+	float m_scaleProgress;
+	float m_menuScaleSpeedX;
+	float m_menuScaleSpeedY;
+	float m_selectScaleX;
+	float m_selectScaleY;
+	float m_selectScaleSpeedX;
+	float m_selectScaleSpeedY;
+	float m_selectScaleProgress;
+
 	FVector m_leftControlLastPos;
 	FVector m_rightControlLastPos;
 
+	FVector m_leftControlCurrentPos;
+	FVector m_rightControlCurrentPos;
+	FVector m_leftControlDeltaPos;
+	FVector m_rightControlDeltaPos;
+
 	FRotator m_leftControlLastRot;
 	FRotator m_rightControlLastRot;
+
+	FRotator m_leftControlCurrentRot;
+	FRotator m_rightControlCurrentRot;
+	FRotator m_leftControlDeltaRot;
+	FRotator RightControlDeltaRot;
+
+	EPlayerState::Type m_playerState;
+
+	TArray<FMenuInfo*> m_menuContents;
 };

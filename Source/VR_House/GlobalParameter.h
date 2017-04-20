@@ -3,7 +3,24 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "Furniture/Furniture.h"
+#include "UserWidget.h"
 #include "GlobalParameter.generated.h"
+
+UENUM(BlueprintType)
+namespace EFurnitureType
+{
+	enum Type
+	{
+		Table = 0,
+		Seat,
+		Bed,
+		Chest,
+		Decoration,
+		Other
+	};
+}
+
 
 /*
 // parameters.
@@ -14,7 +31,74 @@ struct FHouseParamter : public FTableRowBase
 	GENERATED_USTRUCT_BODY();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
-	FName LogoGPLevelName = "LogoA";
+	UDataTable* FurnitureTypeName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	UDataTable* Furniturecategory;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TSubclassOf<UUserWidget> MenuBackgroundWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TSubclassOf<UUserWidget> SelectFrameWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	UDataTable* MainMenuData;
+};
+
+
+USTRUCT(Blueprintable)
+struct FFurnitureTypeName : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TEnumAsByte<EFurnitureType::Type> Type = EFurnitureType::Table;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	FName Typename = "Typename";
+};
+
+USTRUCT(Blueprintable)
+struct FFurnitureCategory : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TEnumAsByte<EFurnitureType::Type> Type = EFurnitureType::Table;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+		UDataTable* FurnitureTable;
+};
+
+USTRUCT(Blueprintable)
+struct FFurnitureTable : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	int32 Index = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TSubclassOf<AFurniture> Furniture;
+};
+
+USTRUCT(Blueprintable)
+struct FMenuInfo : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TSubclassOf<UUserWidget> Widget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	FVector2D DrawSize;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	UDataTable* MenuContent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TSubclassOf<AFurniture> FurnitureClass;
 };
 
 UCLASS()
