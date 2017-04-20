@@ -3,3 +3,5 @@
 #include "VR_House.h"
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, VR_House, "VR_House" );
+
+DEFINE_LOG_CATEGORY(LogHouse)

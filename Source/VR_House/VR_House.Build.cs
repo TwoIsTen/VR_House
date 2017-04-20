@@ -6,7 +6,7 @@ public class VR_House : ModuleRules
 {
 	public VR_House(TargetInfo Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "UMG"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
