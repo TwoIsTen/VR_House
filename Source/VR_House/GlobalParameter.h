@@ -21,6 +21,18 @@ namespace EFurnitureType
 	};
 }
 
+UENUM(BlueprintType)
+namespace EMenuType
+{
+	enum Type
+	{
+		Menu = 0,
+		Place,
+		Delete,
+
+		Quit
+	};
+}
 
 /*
 // parameters.
@@ -90,6 +102,9 @@ struct FMenuInfo : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
 	TSubclassOf<UUserWidget> Widget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	TEnumAsByte<EMenuType::Type> Type;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
 	FVector2D DrawSize;

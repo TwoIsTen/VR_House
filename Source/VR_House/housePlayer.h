@@ -24,15 +24,6 @@ namespace EPlayerState
 	};
 }
 
-UENUM(BlueprintType)
-namespace EMenuType
-{
-	enum Type
-	{
-		MainMenu = 0,
-	};
-}
-
 UCLASS()
 class VR_HOUSE_API AHousePlayer : public ACharacter
 {
@@ -68,8 +59,10 @@ public:
 	void EndUseRightGrip();
 	void StartUseLeftMenu();
 	void StartUseRightMenu();
-	void ShowMenu(EMenuType::Type type, bool isLeft);
-
+	void StartMenuUp();
+	void StartMenuDown();
+	void ShowMainMenu(bool isLeft);
+	
 private:
 	void UpdateMenuBackGround(float DeltaTime);
 	void UpdateSelectFrame(float DeltaTime);
@@ -78,6 +71,12 @@ private:
 	void TickState_RotateFurniture();
 	void TickState_MoveFurniture();
 	void MakeMenu();
+	void MenuUp();
+	void MenuDown();
+	void UpdateMenuPos(float DeltaTime);
+	void MenuSelect();
+	void HideMenu();
+	void SetMenuVisible();
 	UWidgetComponent* GenerateWidgetComponent(FName& name);
 
 protected:
@@ -138,10 +137,12 @@ private:
 	bool m_isLeftGripPressing;
 	bool m_isRightGripPressing;
 
+	int32 m_MenuIndex;
+
 	float m_times;
 	float m_menuScaleX;
 	float m_menuScaleY;
-	float m_scaleProgress;
+	float m_menuScaleProgress;
 	float m_menuScaleSpeedX;
 	float m_menuScaleSpeedY;
 	float m_selectScaleX;
@@ -149,6 +150,11 @@ private:
 	float m_selectScaleSpeedX;
 	float m_selectScaleSpeedY;
 	float m_selectScaleProgress;
+	float m_menuMoveProgress;
+	float m_menuMoveSpeed;
+	float m_selectFrameMoveSpeed;
+	float m_menuFinalPosZ;
+	float m_selectFinalPosZ;
 
 	FVector m_leftControlLastPos;
 	FVector m_rightControlLastPos;
@@ -157,6 +163,7 @@ private:
 	FVector m_rightControlCurrentPos;
 	FVector m_leftControlDeltaPos;
 	FVector m_rightControlDeltaPos;
+
 
 	FRotator m_leftControlLastRot;
 	FRotator m_rightControlLastRot;

@@ -17,11 +17,13 @@ AHousePlayer::AHousePlayer()
 	, m_isRightTriggerPressing(false)
 	, m_isLeftGripPressing(false)
 	, m_isRightGripPressing(false)
+	//int32
+	, m_MenuIndex(0)
 	//floats
 	, m_times(1.0f)
 	, m_menuScaleX(0.0f)
 	, m_menuScaleY(0.0f)
-	, m_scaleProgress(0.0f)
+	, m_menuScaleProgress(0.0f)
 	, m_menuScaleSpeedX(0.0f)
 	, m_menuScaleSpeedY(0.0f)
 	, m_selectScaleX(0.0f)
@@ -29,6 +31,11 @@ AHousePlayer::AHousePlayer()
 	, m_selectScaleSpeedX(0.0f)
 	, m_selectScaleSpeedY(0.0f)
 	, m_selectScaleProgress(0.0f)
+	, m_menuMoveProgress(0.0f)
+	, m_menuMoveSpeed(0.0f)
+	, m_selectFrameMoveSpeed(0.0f)
+	, m_menuFinalPosZ(0.0f)
+	, m_selectFinalPosZ(0.0f)
 	//FVectors
 	, m_leftControlLastPos(0.0f)
 	, m_rightControlLastPos(0.0f)
@@ -54,11 +61,11 @@ AHousePlayer::AHousePlayer()
 	m_cameraComponent->AttachToComponent(m_cameraRoot, FAttachmentTransformRules::KeepRelativeTransform);
 
 	m_leftController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Left Controller"));
-	m_leftController->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	m_leftController->AttachToComponent(m_cameraRoot, FAttachmentTransformRules::KeepRelativeTransform);
 	m_leftController->Hand = EControllerHand::Left;
 
 	m_rightController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Right Controller"));
-	m_rightController->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	m_rightController->AttachToComponent(m_cameraRoot, FAttachmentTransformRules::KeepRelativeTransform);
 	m_rightController->Hand = EControllerHand::Right;
 
 
@@ -126,11 +133,11 @@ void AHousePlayer::BeginPlay()
 	m_leftLaser->SetVisibility(false);
 	m_rightLaser->SetVisibility(false);
 
-	m_leftControlLastPos = m_leftController->GetComponentLocation();
-	m_rightControlLastPos = m_rightController->GetComponentLocation();
+	m_leftControlLastPos = m_leftHandMesh->GetComponentLocation();
+	m_rightControlLastPos = m_rightHandMesh->GetComponentLocation();
 
-	m_leftControlLastRot = m_leftController->GetComponentRotation();
-	m_rightControlLastRot = m_rightController->GetComponentRotation();
+	m_leftControlLastRot = m_leftHandMesh->GetComponentRotation();
+	m_rightControlLastRot = m_rightHandMesh->GetComponentRotation();
 
 	m_playerState = EPlayerState::Free;
 
@@ -147,13 +154,13 @@ void AHousePlayer::Tick(float DeltaTime)
 	Super::Tick( DeltaTime );
 
 	//variables may used by tick
-	m_leftControlCurrentPos = m_leftController->GetComponentLocation();
-	m_rightControlCurrentPos = m_rightController->GetComponentLocation();
+	m_leftControlCurrentPos = m_leftHandMesh->GetComponentLocation();
+	m_rightControlCurrentPos = m_rightHandMesh->GetComponentLocation();
 	m_leftControlDeltaPos = m_leftControlCurrentPos - m_leftControlLastPos;
 	m_rightControlDeltaPos = m_rightControlCurrentPos - m_rightControlLastPos;
 
-	m_leftControlCurrentRot = m_leftController->GetComponentRotation();
-	m_rightControlCurrentRot = m_rightController->GetComponentRotation();
+	m_leftControlCurrentRot = m_leftHandMesh->GetComponentRotation();
+	m_rightControlCurrentRot = m_rightHandMesh->GetComponentRotation();
 	m_leftControlDeltaRot = m_leftControlCurrentRot - m_leftControlLastRot;
 	RightControlDeltaRot = m_rightControlCurrentRot - m_rightControlLastRot;
 
@@ -191,9 +198,9 @@ void AHousePlayer::Tick(float DeltaTime)
 		break;
 	}
 
-
 	UpdateMenuBackGround(DeltaTime);
 	UpdateSelectFrame(DeltaTime);
+	UpdateMenuPos(DeltaTime);
 
 	//update variables need update per frame
 	m_leftControlLastPos = m_leftControlCurrentPos;
@@ -266,6 +273,9 @@ void AHousePlayer::SetupPlayerInputComponent(class UInputComponent* InputComp)
 	InputComp->BindAction("LeftMenuButton", EInputEvent::IE_Pressed, this, &AHousePlayer::StartUseLeftMenu);
 	InputComp->BindAction("RightMenuButton", EInputEvent::IE_Pressed, this, &AHousePlayer::StartUseRightMenu);
 
+	InputComp->BindAction("MenuUp", EInputEvent::IE_Pressed, this, &AHousePlayer::StartMenuUp);
+	InputComp->BindAction("MenuDown", EInputEvent::IE_Pressed, this, &AHousePlayer::StartMenuDown);
+
 
 	InputComp->BindAction("Debug_KeyboardControl", EInputEvent::IE_Pressed, this, &AHousePlayer::Debug_SetControllByKeyBoard);
 
@@ -304,10 +314,10 @@ void AHousePlayer::LookRight(float angle)
 //--------------------------------------------------------------------------------
 void AHousePlayer::Debug_SetControllByKeyBoard()
 {
-	m_leftController->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	m_leftController->SetRelativeLocationAndRotation(FVector(69.281929f, -40.000183f, -21.0f), FRotator(0.0f, -30.0f, 0.0f));
-	m_rightController->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	m_rightController->SetRelativeLocationAndRotation(FVector(69.281929f, 40.000183f, -21.0f), FRotator(0.0f, 30.0f, 0.0f));
+	m_leftHandMesh->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	m_leftHandMesh->SetRelativeLocationAndRotation(FVector(69.281929f, -40.000183f, -21.0f), FRotator(0.0f, -30.0f, 0.0f));
+	m_rightHandMesh->AttachToComponent(m_cameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	m_rightHandMesh->SetRelativeLocationAndRotation(FVector(69.281929f, 40.000183f, -21.0f), FRotator(0.0f, 30.0f, 0.0f));
 }
 
 //--------------------------------------------------------------------------------
@@ -374,17 +384,21 @@ void AHousePlayer::EndUseLeftTrigger()
 		m_times /= 5.0f;
 		break;
 	case EPlayerState::OnMainMenu:
+		MenuSelect();
 		break;
 	default:
 		break;
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::StopLaser(bool isLeft)
 {
 	UStaticMeshComponent* laser = isLeft ? m_leftLaser : m_rightLaser;
 	USceneComponent* TraceStart = isLeft ? m_leftTraceStart : m_rightTraceStart;
 	USceneComponent* TraceEnd = isLeft ? m_leftTraceEnd : m_rightTraceEnd;
+
+	m_playerState = EPlayerState::Free;
 
 	if (laser->bVisible)
 	{
@@ -417,10 +431,6 @@ void AHousePlayer::StopLaser(bool isLeft)
 			{
 				m_selectedFurniture->PrepareToMove();
 				m_playerState = EPlayerState::SelectFurniture;
-			}
-			else
-			{
-				m_playerState = EPlayerState::Free;
 			}
 		}
 	}//else do nothing
@@ -483,12 +493,14 @@ void AHousePlayer::EndUseRightTrigger()
 		m_times *= 5.0f;
 		break;
 	case EPlayerState::OnMainMenu:
+		MenuSelect();
 		break;
 	default:
 		break;
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::StartUseLeftGrip()
 {
 	m_isLeftGripPressing = true;
@@ -513,6 +525,7 @@ void AHousePlayer::StartUseLeftGrip()
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::EndUseLeftGrip()
 {
 	m_isLeftGripPressing = false;
@@ -537,6 +550,7 @@ void AHousePlayer::EndUseLeftGrip()
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::StartUseRightGrip()
 {
 	m_isRightGripPressing = true;
@@ -561,6 +575,7 @@ void AHousePlayer::StartUseRightGrip()
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::EndUseRightGrip()
 {
 	m_isRightGripPressing = false;
@@ -585,12 +600,13 @@ void AHousePlayer::EndUseRightGrip()
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::StartUseLeftMenu()
 {
 	switch (m_playerState)
 	{
 	case EPlayerState::Free:
-		ShowMenu(EMenuType::MainMenu, true);
+		ShowMainMenu(true);
 		m_playerState = EPlayerState::OnMainMenu;
 		break;
 	case EPlayerState::Laser:
@@ -608,12 +624,13 @@ void AHousePlayer::StartUseLeftMenu()
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::StartUseRightMenu()
 {
 	switch (m_playerState)
 	{
 	case EPlayerState::Free:
-		ShowMenu(EMenuType::MainMenu, false);
+		ShowMainMenu(false);
 		m_playerState = EPlayerState::OnMainMenu;
 		break;
 	case EPlayerState::Laser:
@@ -631,27 +648,24 @@ void AHousePlayer::StartUseRightMenu()
 	}
 }
 
-void AHousePlayer::ShowMenu(EMenuType::Type type, bool isLeft)
+//--------------------------------------------------------------------------------
+void AHousePlayer::ShowMainMenu(bool isLeft)
 {
 	UStaticMeshComponent* hand = isLeft ? m_leftHandMesh : m_rightHandMesh;
 
 	m_menuAttachNode->AttachToComponent(hand, FAttachmentTransformRules::KeepRelativeTransform);
 	m_menuAttachNode->SetRelativeLocation(FVector(10.0f, 0.0f, 0.0f));
+	m_menuFinalPosZ = 0.0f;
 
-	switch (type)
-	{
-	case EMenuType::MainMenu:
-		{
-			m_menuContents.Empty();
-			AGlobalParameterReader::GetParameter()->MainMenuData->GetAllRows<FMenuInfo>(FString("Menu Info"), m_menuContents);
-			MakeMenu();
-		}
-		break;
-	default:
-		break;
-	}
+	m_menuContents.Empty();
+	AGlobalParameterReader::GetParameter()->MainMenuData->GetAllRows<FMenuInfo>(FString("Menu Info"), m_menuContents);
+	MakeMenu();
+	SetMenuVisible();
 
+}
 
+void AHousePlayer::SetMenuVisible()
+{
 	TArray<USceneComponent*> childern;
 	m_menuAttachNode->GetChildrenComponents(true, childern);
 	for (int i = 0, n = childern.Num(); i < n; ++i)
@@ -660,6 +674,7 @@ void AHousePlayer::ShowMenu(EMenuType::Type type, bool isLeft)
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::MakeMenu()
 {
 	int num = m_menuContents.Num();
@@ -683,36 +698,44 @@ void AHousePlayer::MakeMenu()
 	baseY -= m_menuContents[0]->DrawSize.Y * 0.1;
 	m_selectScaleX = m_menuContents[0]->DrawSize.X * 0.1;
 	m_selectScaleY = m_menuContents[0]->DrawSize.Y * 0.1;
-	m_selectFrame->SetRelativeLocation(FVector(-0.1f, 0.0f, baseY));
+	//m_selectFrame->SetRelativeLocation(FVector(-0.1f, 0.0f, baseY));
+	m_selectFinalPosZ = baseY;
 	m_menuScaleX /= 10.0f;
 	m_menuScaleY /= 10.0f;
 
-	m_menuAttachNode->SetRelativeLocation(FVector(10.0f, 0.0f, -baseY));
+	//m_menuAttachNode->SetRelativeLocation(FVector(10.0f, 0.0f, -baseY));
+	m_menuFinalPosZ = -baseY;
+	m_MenuIndex = 0;
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::UpdateMenuBackGround(float DeltaTime)
 {
 	FVector scale = m_menuBackGround->GetRelativeTransform().GetScale3D();
 	if (scale.Y != m_menuScaleX || scale.Z != m_menuScaleY)
 	{
-		if (m_scaleProgress == 0.0f)
+		if (m_menuScaleProgress == 0.0f)
 		{
 			m_menuScaleSpeedX = (m_menuScaleX - scale.Y) / m_scaleTime;
 			m_menuScaleSpeedY = (m_menuScaleY - scale.Z) / m_scaleTime;
 		}
 
-		m_scaleProgress += DeltaTime / m_scaleTime;
-		scale.Y = FMath::Min(m_menuScaleX, scale.Y + m_menuScaleSpeedX * DeltaTime);
-		scale.Z = FMath::Min(m_menuScaleY, scale.Z + m_menuScaleSpeedY * DeltaTime);
-		m_menuBackGround->SetRelativeScale3D(scale);
+		m_menuScaleProgress += DeltaTime / m_scaleTime;
+		scale.Y = scale.Y + m_menuScaleSpeedX * DeltaTime;
+		scale.Z = scale.Z + m_menuScaleSpeedY * DeltaTime;
 
-		if (m_scaleProgress >= 1.0f)
+		if (m_menuScaleProgress >= 1.0f)
 		{
-			m_scaleProgress = 0.0f;
+			m_menuScaleProgress = 0.0f;
+			scale.Y = m_menuScaleX;
+			scale.Z = m_menuScaleY;
 		}
+
+		m_menuBackGround->SetRelativeScale3D(scale);
 	}
 }
 
+//--------------------------------------------------------------------------------
 void AHousePlayer::UpdateSelectFrame(float DeltaTime)
 {
 	FVector scale = m_selectFrame->GetRelativeTransform().GetScale3D();
@@ -735,6 +758,160 @@ void AHousePlayer::UpdateSelectFrame(float DeltaTime)
 		}
 		m_selectFrame->SetRelativeScale3D(scale);
 	}
+}
+
+//--------------------------------------------------------------------------------
+void AHousePlayer::MenuUp()
+{
+	if (m_MenuIndex == 0)
+	{
+		return;
+	}
+
+	m_menuFinalPosZ -= m_menuContents[m_MenuIndex]->DrawSize.Y * 0.1f;
+	m_selectFinalPosZ += m_menuContents[m_MenuIndex]->DrawSize.Y * 0.1f;
+	m_menuMoveProgress = 0.0f;
+	--m_MenuIndex;
+}
+
+//--------------------------------------------------------------------------------
+void AHousePlayer::MenuDown()
+{
+	if (m_MenuIndex == m_menuContents.Num() - 1)
+	{
+		return;
+	}
+
+	m_menuFinalPosZ += m_menuContents[m_MenuIndex + 1]->DrawSize.Y * 0.1f;
+	m_selectFinalPosZ -= m_menuContents[m_MenuIndex]->DrawSize.Y * 0.1f;
+	m_menuMoveProgress = 0.0f;
+	++m_MenuIndex;
+}
+
+//--------------------------------------------------------------------------------
+void AHousePlayer::StartMenuUp()
+{
+	switch (m_playerState)
+	{
+	case EPlayerState::Free:
+		break;
+	case EPlayerState::Laser:
+		break;
+	case EPlayerState::SelectFurniture:
+		break;
+	case EPlayerState::MoveFurniture:
+		break;
+	case EPlayerState::RotateFurniture:
+		break;
+	case EPlayerState::OnMainMenu:
+		MenuUp();
+		break;
+	default:
+		break;
+	}
+}
+
+//--------------------------------------------------------------------------------
+void AHousePlayer::StartMenuDown()
+{
+	switch (m_playerState)
+	{
+	case EPlayerState::Free:
+		break;
+	case EPlayerState::Laser:
+		break;
+	case EPlayerState::SelectFurniture:
+		break;
+	case EPlayerState::MoveFurniture:
+		break;
+	case EPlayerState::RotateFurniture:
+		break;
+	case EPlayerState::OnMainMenu:
+		MenuDown();
+		break;
+	default:
+		break;
+	}
+}
+
+//--------------------------------------------------------------------------------
+void AHousePlayer::UpdateMenuPos(float DeltaTime)
+{
+	if (m_menuAttachNode->GetRelativeTransform().GetLocation().Z != m_menuFinalPosZ)
+	{
+		if (m_menuMoveProgress == 0.0f)
+		{
+			m_menuMoveSpeed = (m_menuFinalPosZ - m_menuAttachNode->GetRelativeTransform().GetLocation().Z) / m_scaleTime;
+			m_selectFrameMoveSpeed = (m_selectFinalPosZ - m_selectFrame->GetRelativeTransform().GetLocation().Z) / m_scaleTime;
+		}
+
+		m_menuMoveProgress += DeltaTime;
+		m_menuAttachNode->AddRelativeLocation(FVector(0.0f, 0.0f, DeltaTime * m_menuMoveSpeed));
+		m_selectFrame->AddRelativeLocation(FVector(0.0f, 0.0f, DeltaTime * m_selectFrameMoveSpeed));
+
+		if (m_menuMoveProgress >= m_scaleTime)
+		{
+			m_menuMoveProgress = 0.0f;
+			m_menuAttachNode->SetRelativeLocation(FVector(10.0f, 0.0f, m_menuFinalPosZ));
+			m_selectFrame->SetRelativeLocation(FVector(-0.1f, 0.0f, m_selectFinalPosZ));
+		}
+	}
+}
+
+//--------------------------------------------------------------------------------
+void AHousePlayer::MenuSelect()
+{
+	FMenuInfo info = *m_menuContents[m_MenuIndex];
+
+	switch (info.Type)
+	{
+	case EMenuType::Menu:
+		HideMenu();
+		info.MenuContent->GetAllRows<FMenuInfo>(FString("Menu Info"), m_menuContents);
+		MakeMenu();
+		SetMenuVisible();
+		break;
+	case EMenuType::Delete:
+		break;
+	case EMenuType::Place:
+		break;
+	case EMenuType::Quit:
+		HideMenu();
+		m_playerState = EPlayerState::Free;
+		break;
+	default:
+		break;
+	}
+}
+
+void AHousePlayer::HideMenu()
+{
+	m_menuScaleX = 0.0f;
+	m_menuScaleY = 0.0f;
+	m_menuScaleProgress = 0.0f;
+	m_selectScaleX = 0.0f;
+	m_selectScaleY = 0.0f;
+	m_selectScaleProgress = 0.0f;
+	m_menuFinalPosZ = 0.0f;
+	m_selectFinalPosZ = 0.0f;
+	m_menuMoveProgress = 0.0f;
+
+	TArray<USceneComponent*> childern;
+	m_menuAttachNode->GetChildrenComponents(true, childern);
+	for (int i = 0, n = childern.Num(); i < n; ++i)
+	{
+		UWidgetComponent* comp = Cast<UWidgetComponent>(childern[i]);
+		comp->SetVisibility(false);
+		if (comp == m_menuBackGround || comp == m_selectFrame)
+		{
+			continue;
+		}
+		else
+		{
+			comp->DestroyComponent();
+		}
+	}
+	m_menuContents.Empty();
 }
 
 //--------------------------------------------------------------------------------
